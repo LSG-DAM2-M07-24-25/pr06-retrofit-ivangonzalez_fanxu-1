@@ -41,12 +41,6 @@ fun PokemonListScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Button(
-                onClick = { viewModel.getPokemonList() }
-            ) {
-                Text(text = "Reload")
-            }
-
             if (errorMessage.value != null) {
                 ErrorState()
             } else if (isLoading.value) {
