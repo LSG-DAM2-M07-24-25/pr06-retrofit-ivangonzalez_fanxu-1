@@ -1,6 +1,7 @@
-package com.fanxu.pokemon.model
+package com.fanxu.pokemon.api
 
 import android.util.Log
+import com.fanxu.pokemon.model.PokemonListModel
 import retrofit2.Response
 
 interface PokemonListRepositoryInterface {

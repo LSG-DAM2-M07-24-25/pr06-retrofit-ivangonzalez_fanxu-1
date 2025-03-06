@@ -1,5 +1,7 @@
-package com.fanxu.pokemon.model
+package com.fanxu.pokemon.api
 
+import com.fanxu.pokemon.model.PokemonDetailsModel
+import com.fanxu.pokemon.model.PokemonListModel
 import okhttp3.OkHttpClient
 import retrofit2.Response
 import retrofit2.Retrofit

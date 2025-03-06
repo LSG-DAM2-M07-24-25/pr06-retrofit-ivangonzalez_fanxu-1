@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fanxu.pokemon.model.PokemonDetailsModel
-import com.fanxu.pokemon.model.PokemonDetailsRepository
-import com.fanxu.pokemon.model.PokemonDetailsRepositoryInterface
+import com.fanxu.pokemon.api.PokemonDetailsRepository
+import com.fanxu.pokemon.api.PokemonDetailsRepositoryInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

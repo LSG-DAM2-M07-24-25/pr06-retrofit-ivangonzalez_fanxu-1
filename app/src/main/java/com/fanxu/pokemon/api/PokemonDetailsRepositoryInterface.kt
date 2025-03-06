@@ -1,5 +1,6 @@
-package com.fanxu.pokemon.model
+package com.fanxu.pokemon.api
 
+import com.fanxu.pokemon.model.PokemonDetailsModel
 import retrofit2.Response
 
 interface PokemonDetailsRepositoryInterface {
