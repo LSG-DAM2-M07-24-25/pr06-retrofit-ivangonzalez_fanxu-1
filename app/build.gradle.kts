@@ -2,6 +2,7 @@ plugins {
     id("com.android.application") // Plugin para aplicaciones Android
     id("org.jetbrains.kotlin.android") // Habilita Kotlin en Android
     id("kotlin-parcelize") // Permite usar @Parcelize en data classes
+    id("kotlin-kapt")
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -41,6 +42,10 @@ android {
 }
 
 dependencies {
+
+    implementation("androidx.room:room-runtime:2.6.1" )
+    implementation("androidx.room:room-ktx:2.6.1" )
+    kapt("androidx.room:room-compiler:2.6.1" )
     implementation("androidx.compose.ui:ui:1.6.0")
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")

@@ -13,10 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
@@ -29,10 +31,16 @@ fun PokemonDetailsScreen(
     navController: NavController,
     name: String
 ) {
-    val viewModel = remember { PokemonDetailsViewModel() }
+    // Get application context for the ViewModel factory
+    val context = LocalContext.current
+    val viewModel = viewModel<PokemonDetailsViewModel>(
+        factory = PokemonDetailsViewModel.Factory(context.applicationContext as android.app.Application)
+    )
+
     val pokemonDetails = viewModel.pokemonDetails.collectAsState()
     val isLoading = viewModel.isLoading.collectAsState()
     val gotError = viewModel.gotError.collectAsState()
+    val isCaught = viewModel.isCaught.collectAsState()
 
     DisposableEffect(key1 = viewModel) {
         viewModel.fetchDetails(name)
@@ -43,7 +51,11 @@ fun PokemonDetailsScreen(
         navController = navController,
         isLoading = isLoading.value,
         gotError = gotError.value,
-        pokemonDetails = pokemonDetails.value
+        pokemonDetails = pokemonDetails.value,
+        isCaught = isCaught.value,
+        onCatchClicked = { pokemonName, imageUrl ->
+            viewModel.toggleCaughtStatus(pokemonName, imageUrl)
+        }
     )
 }
 
@@ -52,7 +64,9 @@ private fun Content(
     navController: NavController,
     isLoading: Boolean,
     gotError: Boolean,
-    pokemonDetails: PokemonDetailsModel?
+    pokemonDetails: PokemonDetailsModel?,
+    isCaught: Boolean,
+    onCatchClicked: (String, String) -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -61,13 +75,23 @@ private fun Content(
         when {
             isLoading -> CircularProgressIndicator(modifier = Modifier.size(200.dp))
             gotError -> ErrorState()
-            pokemonDetails != null -> DetailedContent(navController, pokemonDetails)
+            pokemonDetails != null -> DetailedContent(
+                navController = navController,
+                details = pokemonDetails,
+                isCaught = isCaught,
+                onCatchClicked = onCatchClicked
+            )
         }
     }
 }
 
 @Composable
-private fun DetailedContent(navController: NavController, details: PokemonDetailsModel) {
+private fun DetailedContent(
+    navController: NavController,
+    details: PokemonDetailsModel,
+    isCaught: Boolean,
+    onCatchClicked: (String, String) -> Unit
+) {
     val configuration = LocalConfiguration.current
     val isLargeScreen = configuration.screenWidthDp > 600
 
@@ -129,7 +153,24 @@ private fun DetailedContent(navController: NavController, details: PokemonDetail
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { navController.popBackStack() }) {
+
+        // Add Catch/Release Button
+        Button(
+            onClick = {
+                onCatchClicked(details.name, details.sprite.imageURL)
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isCaught) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) {
+            Text(if (isCaught) "Liberar Pokémon" else "Capturar Pokémon")
+        }
+
+        Button(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) {
             Text("Volver")
         }
     }
