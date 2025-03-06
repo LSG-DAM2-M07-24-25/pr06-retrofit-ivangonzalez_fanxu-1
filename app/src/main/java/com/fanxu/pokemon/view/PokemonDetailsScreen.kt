@@ -2,45 +2,26 @@ package com.fanxu.pokemon.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
-import androidx.compose.ui.graphics.painter.Painter
 import com.fanxu.pokemon.ui.theme.components.ErrorState
 import com.fanxu.pokemon.model.PokemonDetailsModel
-import com.fanxu.pokemon.model.PokemonDetailsTypeItemModel
 import com.fanxu.pokemon.viewmodel.PokemonDetailsViewModel
 
 @Composable
@@ -49,19 +30,17 @@ fun PokemonDetailsScreen(
     name: String
 ) {
     val viewModel = remember { PokemonDetailsViewModel() }
-
-    // MARK: - State
     val pokemonDetails = viewModel.pokemonDetails.collectAsState()
     val isLoading = viewModel.isLoading.collectAsState()
     val gotError = viewModel.gotError.collectAsState()
 
-    // Usar DisposableEffect para asegurar que fetchDetails se llama solo una vez
     DisposableEffect(key1 = viewModel) {
         viewModel.fetchDetails(name)
-        onDispose { /* Limpieza si es necesaria */ }
+        onDispose { }
     }
 
     Content(
+        navController = navController,
         isLoading = isLoading.value,
         gotError = gotError.value,
         pokemonDetails = pokemonDetails.value
@@ -70,6 +49,7 @@ fun PokemonDetailsScreen(
 
 @Composable
 private fun Content(
+    navController: NavController,
     isLoading: Boolean,
     gotError: Boolean,
     pokemonDetails: PokemonDetailsModel?
@@ -78,81 +58,56 @@ private fun Content(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        if(isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(200.dp),
-                color = Color.Blue,
-                trackColor = Color.Red
-            )
-        } else if(gotError) {
-            ErrorState()
-        } else {
-            pokemonDetails?.let { details ->
-                DetailedContent(details = details)
-            }
+        when {
+            isLoading -> CircularProgressIndicator(modifier = Modifier.size(200.dp))
+            gotError -> ErrorState()
+            pokemonDetails != null -> DetailedContent(navController, pokemonDetails)
         }
     }
 }
 
 @Composable
-private fun DetailedContent(details: PokemonDetailsModel) {
+private fun DetailedContent(navController: NavController, details: PokemonDetailsModel) {
+    val configuration = LocalConfiguration.current
+    val isLargeScreen = configuration.screenWidthDp > 600
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        // Imagen del Pokémon
+        Spacer(modifier = Modifier.padding(10.dp))
         AsyncImage(url = details.sprite.imageURL)
 
-        // Nombre del Pokémon
         Text(
-            modifier = Modifier
-                .padding(top = 16.dp, bottom = 24.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(top = 16.dp, bottom = 24.dp),
             text = details.name.capitalize(),
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            fontSize = 28.sp,
+            fontSize = if (isLargeScreen) 32.sp else 24.sp,
             color = MaterialTheme.colorScheme.primary
         )
 
-        // Tarjeta de información
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = if (isLargeScreen) 32.dp else 8.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
-                // Tipos de Pokémon
-                Text(
-                    text = "Tipos",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    details.types.forEach { typeItem ->
-                        TypeBadge(type = typeItem)
+                Text("Tipos", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                    details.types.forEach { type ->
+                        TypeBadge(type.type.name)
                         Spacer(modifier = Modifier.width(8.dp))
                     }
                 }
-
                 Divider(modifier = Modifier.padding(vertical = 12.dp))
 
                 // Características físicas
@@ -172,13 +127,17 @@ private fun DetailedContent(details: PokemonDetailsModel) {
                 InfoRow(label = "Peso", value = "${details.weight / 10.0} kg")
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = { navController.popBackStack() }) {
+            Text("Volver")
+        }
     }
 }
 
 @Composable
-private fun TypeBadge(type: PokemonDetailsTypeItemModel) {
-    val typeColor = getTypeColor(type.type.name)
-
+private fun TypeBadge(type: String) {
+    val typeColor = getTypeColor(type)
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
@@ -186,15 +145,18 @@ private fun TypeBadge(type: PokemonDetailsTypeItemModel) {
             .padding(horizontal = 12.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = type.type.name.capitalize(),
-            color = Color.White,
-            fontWeight = FontWeight.Medium,
-            fontSize = 14.sp
-        )
+        Text(text = type.capitalize(), color = Color.White, fontWeight = FontWeight.Medium, fontSize = 14.sp)
     }
 }
 
+@Composable
+private fun AsyncImage(url: String) {
+    Image(
+        modifier = Modifier.size(180.dp),
+        painter = rememberImagePainter(data = url, builder = { transformations(CircleCropTransformation()) }),
+        contentDescription = "Imagen de Pokémon"
+    )
+}
 @Composable
 private fun InfoRow(label: String, value: String) {
     Row(
@@ -217,21 +179,6 @@ private fun InfoRow(label: String, value: String) {
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
-@Composable
-private fun AsyncImage(url: String) {
-    val painter: Painter = rememberImagePainter(data = url, builder = {
-        transformations(CircleCropTransformation())
-    })
-
-    Image(
-        modifier = Modifier.size(180.dp),
-        painter = painter,
-        contentDescription = "Imagen de Pokémon"
-    )
-}
-
-// Función para obtener un color basado en el tipo de Pokémon
 private fun getTypeColor(type: String): Color {
     return when (type.lowercase()) {
         "normal" -> Color(0xFFA8A77A)
@@ -256,7 +203,6 @@ private fun getTypeColor(type: String): Color {
     }
 }
 
-// Extensión para capitalizar la primera letra de un string
 private fun String.capitalize(): String {
     return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }

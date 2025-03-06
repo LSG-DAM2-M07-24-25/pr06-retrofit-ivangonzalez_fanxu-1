@@ -55,6 +55,7 @@ fun PokemonListScreen(
                     )
                 }
             } else {
+                Spacer(modifier = Modifier.padding(25.dp))
                 LazyColumn {
                     pokemonList.value?.let { results ->
                         items(results.results.size) { index ->
