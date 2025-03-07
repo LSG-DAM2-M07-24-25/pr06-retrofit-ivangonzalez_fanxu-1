@@ -108,8 +108,8 @@ private fun DetailedContent(
         animationSpec = keyframes {
             durationMillis = 400
             0f at 0
-            15f at 100
-            -15f at 300
+            30f at 100
+            -30f at 300
             0f at 400
         }
     )
