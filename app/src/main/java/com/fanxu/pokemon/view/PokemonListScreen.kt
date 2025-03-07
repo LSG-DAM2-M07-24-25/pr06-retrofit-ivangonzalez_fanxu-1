@@ -45,23 +45,23 @@ fun PokemonListScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(vertical = 5.dp, horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(40.dp)
+                modifier = Modifier.padding(horizontal = 20.dp)
             ) {
-                Text(
-                    text = "Pokédex",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold
+                Image(
+                    painter = painterResource(id = R.drawable.pokedex_logo),
+                    contentDescription = "Pokédex Logo",
+                    modifier = Modifier.size(150.dp)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Image(
                     painter = painterResource(id = R.drawable.pokeball),
-                    contentDescription = "Pokédex Logo",
+                    contentDescription = "Pokéball Image",
                     modifier = Modifier.size(50.dp)
                 )
             }
