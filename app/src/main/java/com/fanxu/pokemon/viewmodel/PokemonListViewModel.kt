@@ -25,7 +25,7 @@ class PokemonListViewModel(
     fun getPokemonList() {
         viewModelScope.launch {
             _isLoading.value = true
-            val response = repository.getPokemonList(0,150)
+            val response = repository.getPokemonList(0,1025)
             if(response.isSuccessful) {
                 val body = response.body()
                 if(body != null) {
