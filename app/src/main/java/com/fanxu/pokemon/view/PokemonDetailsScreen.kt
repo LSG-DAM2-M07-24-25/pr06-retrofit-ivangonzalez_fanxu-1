@@ -1,5 +1,7 @@
 package com.fanxu.pokemon.view
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,8 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -22,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
+import com.fanxu.pokemon.R
 import com.fanxu.pokemon.ui.theme.components.ErrorState
 import com.fanxu.pokemon.model.PokemonDetailsModel
 import com.fanxu.pokemon.viewmodel.PokemonDetailsViewModel
@@ -95,6 +100,28 @@ private fun DetailedContent(
     val configuration = LocalConfiguration.current
     val isLargeScreen = configuration.screenWidthDp > 600
 
+    var isClicked by remember { mutableStateOf(false) }
+
+    // Animación para la rotación (agitar)
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isClicked) 30f else 0f,
+        animationSpec = keyframes {
+            durationMillis = 400
+            0f at 0
+            15f at 100
+            -15f at 300
+            0f at 400
+        }
+    )
+
+    // Resetear el estado después de la animación
+    LaunchedEffect(isClicked) {
+        if (isClicked) {
+            kotlinx.coroutines.delay(200) // Duración de la animación
+            isClicked = false
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -158,13 +185,27 @@ private fun DetailedContent(
         Button(
             onClick = {
                 onCatchClicked(details.name, details.sprite.imageURL)
+                isClicked = true // Activamos la animación de agitación
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isCaught) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                containerColor = Color.Transparent
             ),
+            contentPadding = PaddingValues(0.dp),
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text(if (isCaught) "Liberar Pokémon" else "Capturar Pokémon")
+            val painter = if (isCaught) {
+                painterResource(id = R.drawable.pokeball)
+            } else {
+                painterResource(id = R.drawable.pokeball_bw)
+            }
+
+            Image(
+                painter = painter,
+                contentDescription = "Pokéball Image",
+                modifier = Modifier
+                    .size(100.dp)
+                    .graphicsLayer(rotationZ = rotationAngle) // Aplicamos la rotación a la imagen
+            )
         }
 
         Button(
@@ -220,7 +261,7 @@ private fun InfoRow(label: String, value: String) {
     }
 }
 
-private fun getTypeColor(type: String): Color {
+fun getTypeColor(type: String): Color {
     return when (type.lowercase()) {
         "normal" -> Color(0xFFA8A77A)
         "fire" -> Color(0xFFEE8130)
