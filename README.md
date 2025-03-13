@@ -20,7 +20,7 @@ Filtra los Pokémon en tiempo real con una barra de búsqueda intuitiva.
 ---
 
 ## 📖 Pokémon Detailed View  
-Consulta información detallada sobre cada Pokémon, incluyendo habilidades y estadísticas.  
+Consulta información detallada sobre cada Pokémon, incluyendo su tipo, altura y peso.  
 
 ![Pokémon Detailed View](https://github.com/user-attachments/assets/037fe338-0eb2-48c5-b5fe-68693014cae1)
 
