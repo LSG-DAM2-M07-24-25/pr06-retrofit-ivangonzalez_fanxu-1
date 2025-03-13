@@ -36,7 +36,6 @@ fun PokemonDetailsScreen(
     navController: NavController,
     name: String
 ) {
-    // Get application context for the ViewModel factory
     val context = LocalContext.current
     val viewModel = viewModel<PokemonDetailsViewModel>(
         factory = PokemonDetailsViewModel.Factory(context.applicationContext as android.app.Application)
@@ -102,7 +101,6 @@ private fun DetailedContent(
 
     var isClicked by remember { mutableStateOf(false) }
 
-    // Animación para la rotación (agitar)
     val rotationAngle by animateFloatAsState(
         targetValue = if (isClicked) 30f else 0f,
         animationSpec = keyframes {
@@ -114,7 +112,6 @@ private fun DetailedContent(
         }
     )
 
-    // Resetear el estado después de la animación
     LaunchedEffect(isClicked) {
         if (isClicked) {
             kotlinx.coroutines.delay(200) // Duración de la animación
@@ -161,7 +158,6 @@ private fun DetailedContent(
                 }
                 Divider(modifier = Modifier.padding(vertical = 12.dp))
 
-                // Características físicas
                 Text(
                     text = "Características",
                     fontWeight = FontWeight.Bold,
@@ -171,17 +167,14 @@ private fun DetailedContent(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Altura
                 InfoRow(label = "Altura", value = "${details.height / 10.0} m")
 
-                // Peso
                 InfoRow(label = "Peso", value = "${details.weight / 10.0} kg")
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Add Catch/Release Button
         Button(
             onClick = {
                 onCatchClicked(details.name, details.sprite.imageURL)

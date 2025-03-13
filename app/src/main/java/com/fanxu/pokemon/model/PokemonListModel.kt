@@ -16,4 +16,10 @@ data class PokemonListModel(
 data class PokemonListItem(
     @SerializedName("name") val name: String,
     @SerializedName("url") val url: String
-): Parcelable
+): Parcelable {
+    val id: String
+        get() = url.split("/").filter { it.isNotEmpty() }.last()
+
+    val imageUrl: String
+        get() = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+}

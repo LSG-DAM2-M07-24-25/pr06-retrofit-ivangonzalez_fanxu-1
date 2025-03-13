@@ -43,32 +43,25 @@ class PokemonDetailsViewModel(
     }
 
     fun fetchDetails(name: String) {
-        // Start in another thread
         viewModelScope.launch {
-            // Loading state
             _isLoading.value = true
             val result = repository.getPokemonDetails(name)
             val error = result.errorBody()
             val data = result.body()
             if (error != null || !result.isSuccessful) {
-                // Handle error state
                 Log.d("Got an error", "Got an error")
                 _isLoading.value = false
                 _gotError.value = true
                 return@launch
             }
             if (data != null) {
-                // Handle success case
                 Log.d("Got data", "Got data")
                 _isLoading.value = false
                 _pokemonDetails.value = data
-
-                // Check if this pokemon is caught
                 caughtRepository.isPokemonCaught(name).collect { isCaught ->
                     _isCaught.value = isCaught
                 }
             } else {
-                // Handle empty data
                 Log.d("Got nothing", "Got data")
                 _isLoading.value = false
             }
@@ -79,17 +72,14 @@ class PokemonDetailsViewModel(
         viewModelScope.launch {
             val currentStatus = _isCaught.value
             if (currentStatus) {
-                // Release pokemon
                 caughtRepository.releasePokemon(CaughtPokemon(name, imageUrl))
             } else {
-                // Catch pokemon
                 caughtRepository.catchPokemon(CaughtPokemon(name, imageUrl))
             }
             _isCaught.value = !currentStatus
         }
     }
 
-    // Factory class needed for passing Application to ViewModel
     class Factory(private val application: Application) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(PokemonDetailsViewModel::class.java)) {
